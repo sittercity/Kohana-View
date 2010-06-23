@@ -52,7 +52,7 @@ Create your view template file the same as you would have before, but remember t
 Your view class will pass on properties and methods that begin with 'var_' to the template.
 
 	// application/classes/view/foo/bar.php
-	class View_Foo_Bar extends View {
+	class View_Foo_Bar extends ClassView {
 
 		public $adjectives = array('awesome', 'neato', 'cool beans');
 
@@ -72,7 +72,7 @@ Your view class will pass on properties and methods that begin with 'var_' to th
 
 And in your controller you could do
 
-	$bar = View::factory('foo/bar')->set('var_adjective', 'the best');
+	$bar = ClassViewView::factory('foo/bar')->set('var_adjective', 'the best');
 	echo $bar;
 
 which would render:
