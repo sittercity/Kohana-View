@@ -25,12 +25,12 @@ class Kohana_ClassView {
 	 * Raw output character. Prepend this on any echo variables to
 	 * turn off auto encoding of the output
 	 */
-	protected $_raw_output_char = '!';
+	const RAW_OUTPUT_CHAR = '!';
 
 	/**
 	 * The encoding method to use on view output. Only use the method name
 	 */
-	protected $_encode_method = 'HTML::chars';
+	const ENCODE_METHOD = 'HTML::chars';
 
 	/**
 	 * Returns a new raw View object. If you do not define the "file" parameter,
@@ -72,13 +72,13 @@ class Kohana_ClassView {
 
 		try
 		{
-			$data = file_get_contents($kohana_view_filename);
+			$_data = file_get_contents($kohana_view_filename);
 
 			$regex = '/<\?(\=|php echo)(.+?)\?>/';
-			$data = preg_replace_callback($regex, array($this, '_escape_val'), $data);
+			$_data = preg_replace_callback($regex, array($this, '_escape_val'), $_data);
 
 			// Load the view within the current scope
-			eval('?>'.$data);
+			eval('?>'.$_data);
 		}
 		catch (Exception $e)
 		{
@@ -101,10 +101,10 @@ class Kohana_ClassView {
 	 */
 	protected function _escape_val($matches)
 	{
-		if (substr(trim($matches[2]), 0, 1) != $this->_raw_output_char)
-			return '<?php echo '.$this->_encode_method.'('.$matches[2].'); ?>';
+		if (substr(trim($matches[2]), 0, 1) != ClassView::RAW_OUTPUT_CHAR)
+			return '<?php echo '.ClassView::ENCODE_METHOD.'('.$matches[2].'); ?>';
 		else // Remove the "turn off escape" character
-			return '<?php echo '.substr(trim($matches[2]), strlen($this->$_raw_output_char), strlen($matches[2])-1).'; ?>';
+			return '<?php echo '.substr(trim($matches[2]), strlen(ClassView::RAW_OUTPUT_CHAR), strlen($matches[2])-1).'; ?>';
 	}
 
 	/**
@@ -123,12 +123,12 @@ class Kohana_ClassView {
 		{
 			foreach ($key as $key2 => $value)
 			{
-				View::$_global_data[$key2] = $value;
+				ClassView::$_global_data[$key2] = $value;
 			}
 		}
 		else
 		{
-			View::$_global_data[$key] = $value;
+			ClassView::$_global_data[$key] = $value;
 		}
 	}
 
@@ -144,7 +144,7 @@ class Kohana_ClassView {
 	 */
 	public static function bind_global($key, & $value)
 	{
-		View::$_global_data[$key] =& $value;
+		ClassView::$_global_data[$key] =& $value;
 	}
 
 	/**
@@ -198,9 +198,9 @@ class Kohana_ClassView {
 		{
 			return $this->_data[$key];
 		}
-		elseif (isset(View::$_global_data[$key]))
+		elseif (isset(ClassView::$_global_data[$key]))
 		{
-			return View::$_global_data[$key];
+			return ClassView::$_global_data[$key];
 		}
 		else
 		{
@@ -235,7 +235,7 @@ class Kohana_ClassView {
 	 */
 	public function __isset($key)
 	{
-		return (isset($this->_data[$key]) OR isset(View::$_global_data[$key]));
+		return (isset($this->_data[$key]) OR isset(ClassView::$_global_data[$key]));
 	}
 
 	/**
@@ -248,7 +248,7 @@ class Kohana_ClassView {
 	 */
 	public function __unset($key)
 	{
-		unset($this->_data[$key], View::$_global_data[$key]);
+		unset($this->_data[$key], ClassView::$_global_data[$key]);
 	}
 
 	/**
@@ -394,7 +394,7 @@ class Kohana_ClassView {
 		}
 
 		// Combine local and global data and capture the output
-		return $this->capture($this->_file, $this->_data + View::$_global_data);
+		return $this->capture($this->_file, $this->_data + ClassView::$_global_data);
 	}
 
 } // End View
