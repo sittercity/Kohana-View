@@ -102,9 +102,9 @@ class Kohana_ClassView {
 	protected function _escape_val($matches)
 	{
 		if (substr(trim($matches[2]), 0, 1) != ClassView::RAW_OUTPUT_CHAR)
-			return '<?php echo '.ClassView::ENCODE_METHOD.'('.$matches[2].'); ?>';
+			return '<?php echo '.ClassView::ENCODE_METHOD.'('.$matches[2].') ?>';
 		else // Remove the "turn off escape" character
-			return '<?php echo '.substr(trim($matches[2]), strlen(ClassView::RAW_OUTPUT_CHAR), strlen($matches[2])-1).'; ?>';
+			return '<?php echo '.substr(trim($matches[2]), strlen(ClassView::RAW_OUTPUT_CHAR), strlen($matches[2])-1).' ?>';
 	}
 
 	/**
