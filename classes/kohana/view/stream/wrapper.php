@@ -121,7 +121,7 @@ class Kohana_View_Stream_Wrapper
 		if (substr(trim($matches[2]), 0, 1) != $this->_raw_output_char)
 			return '<?php echo '.$this->_encode_method.'('.$var.'); ?>';
 		else // Remove the "turn off escape" character
-			return '<?php echo '.substr(trim($var), strlen($this->_raw_output_char), strlen($var)-1).'; ?>';
+			return '<?php echo '.substr(trim($var), strlen($this->_raw_output_char), strlen($var)-1).' ?>';
 	}
 
 	/**
