@@ -15,22 +15,11 @@ class Kohana_ClassView {
 	// Array of global variables
 	protected static $_global_data = array();
 
-	// View filename
-	protected $_file;
-
 	// Encoded view data
 	protected $_data = array();
 
-	/**
-	 * Raw output character. Prepend this on any echo variables to
-	 * turn off auto encoding of the output
-	 */
-	const RAW_OUTPUT_CHAR = '!';
-
-	/**
-	 * The encoding method to use on view output. Only use the method name
-	 */
-	const ENCODE_METHOD = 'HTML::chars';
+	// View filename
+	protected $_file;
 
 	/**
 	 * Returns a new raw View object. If you do not define the "file" parameter,
@@ -47,7 +36,7 @@ class Kohana_ClassView {
 		// Return a raw view object if no template is specified.
 		if ($file === FALSE)
 			return new View(FALSE, $data);
-		
+
 		$class = 'View_'.strtr($file, '/', '_');
 		return new $class($file, $data);
 	}
@@ -56,15 +45,18 @@ class Kohana_ClassView {
 	 * Captures the output that is generated when a view is included.
 	 * The view data will be extracted to make local variables.
 	 *
-	 *     $output = $this->capture($file, $data);
+	 *     $output = $this->capture($file);
 	 *
 	 * @param   string  filename
-	 * @param   array   variables
 	 * @return  string
 	 */
 	protected function capture($kohana_view_filename, array $kohana_view_data)
 	{
-		// Import the view variables to local namespace
+		if ( ! in_array('kohana.view', stream_get_wrappers()))
+		{
+			stream_wrapper_register('kohana.view', 'View_Stream_Wrapper');
+		}
+
 		extract($kohana_view_data, EXTR_SKIP);
 
 		// Capture the view output
@@ -72,13 +64,7 @@ class Kohana_ClassView {
 
 		try
 		{
-			$_data = file_get_contents($kohana_view_filename);
-
-			$regex = '/<\?(\=|php echo)(.+?)\?>/';
-			$_data = preg_replace_callback($regex, array($this, '_escape_val'), $_data);
-
-			// Load the view within the current scope
-			eval('?>'.$_data);
+			include 'kohana.view://'.$kohana_view_filename;
 		}
 		catch (Exception $e)
 		{
@@ -91,20 +77,6 @@ class Kohana_ClassView {
 
 		// Get the captured output and close the buffer
 		return ob_get_clean();
-	}
-
-	/**
-	 * Escapes a variable from template matching
-	 *
-	 * @param   array   matches
-	 * @return  string
-	 */
-	protected function _escape_val($matches)
-	{
-		if (substr(trim($matches[2]), 0, 1) != ClassView::RAW_OUTPUT_CHAR)
-			return '<?php echo '.ClassView::ENCODE_METHOD.'('.$matches[2].') ?>';
-		else // Remove the "turn off escape" character
-			return '<?php echo '.substr(trim($matches[2]), strlen(ClassView::RAW_OUTPUT_CHAR), strlen($matches[2])-1).' ?>';
 	}
 
 	/**
@@ -171,7 +143,6 @@ class Kohana_ClassView {
 		{
 			$this->set_filename($file);
 		}
-		
 
 		if ( $data !== NULL)
 		{
@@ -226,29 +197,29 @@ class Kohana_ClassView {
 	/**
 	 * Magic method, determines if a variable is set.
 	 *
-	 *     isset($view->foo);
+	 *	   isset($view->foo);
 	 *
 	 * [!!] `NULL` variables are not considered to be set by [isset](http://php.net/isset).
 	 *
-	 * @param   string  variable name
-	 * @return  boolean
+	 * @param	string	variable name
+	 * @return	boolean
 	 */
 	public function __isset($key)
 	{
-		return (isset($this->_data[$key]) OR isset(ClassView::$_global_data[$key]));
+			return (isset($this->_data[$key]) OR isset(ClassView::$_global_data[$key]));
 	}
 
 	/**
 	 * Magic method, unsets a given variable.
 	 *
-	 *     unset($view->foo);
+	 *	   unset($view->foo);
 	 *
-	 * @param   string  variable name
-	 * @return  void
+	 * @param	string	variable name
+	 * @return	void
 	 */
 	public function __unset($key)
 	{
-		unset($this->_data[$key], ClassView::$_global_data[$key]);
+			unset($this->_data[$key], ClassView::$_global_data[$key]);
 	}
 
 	/**
@@ -396,5 +367,4 @@ class Kohana_ClassView {
 		// Combine local and global data and capture the output
 		return $this->capture($this->_file, $this->_data + ClassView::$_global_data);
 	}
-
 } // End View
