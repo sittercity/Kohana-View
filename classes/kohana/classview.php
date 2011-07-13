@@ -237,7 +237,7 @@ class Kohana_ClassView {
 		catch (Exception $e)
 		{
 			// Display the exception message
-			Kohana::exception_handler($e);
+			Kohana::handler($e);
 
 			return '';
 		}
